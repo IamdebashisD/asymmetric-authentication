@@ -45,3 +45,13 @@ export const getRefreshTokenExpiry = () => {
         Date.now() + refreshTokenExpiresInDays * 24 * 60 * 60 * 1000
     )
 } 
+
+export const generateIdToken = (payload) => {
+    return jwt.sign(payload, privateKey, {
+        algorithm: 'RS256',
+        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+        keyid: process.env.JWT_KEY_ID,
+        issuer: process.env.JWT_ISSUER,
+        audience: process.env.JWT_AUDIENCE
+    })
+}
