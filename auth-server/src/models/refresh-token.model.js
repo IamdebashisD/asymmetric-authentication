@@ -11,6 +11,9 @@ const refreshTokenSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    scope: [{
+        type: String,
+    }],
     expiresAt: {
         type: Date,
         required: true,
