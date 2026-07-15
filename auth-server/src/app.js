@@ -1,5 +1,10 @@
 import express, { urlencoded } from 'express'
+
 import authRouter from './routes/auth.routes.js'
+import jwksRouter from './routes/jwks.routes.js'
+import discoveryRouter from './routes/discovery.routes.js'
+import oidcRouter from './routes/oidc.routes.js'
+
 import { errorMiddleware } from './middleware/error.middleware.js'
 
 export function createExpressApplication() {
@@ -9,6 +14,11 @@ export function createExpressApplication() {
     app.use(urlencoded({ extended: true }))
 
 
+    app.get('', (req, res) => {
+        return res.status(200).json({
+            message: 'Hello World'
+        })
+    })
 
     app.get('/health', (req, res) => {
         return res.status(200).json({
@@ -17,6 +27,9 @@ export function createExpressApplication() {
     })
 
     app.use('/api/auth', authRouter)
+    app.use(jwksRouter)
+    app.use(discoveryRouter)
+    app.use(oidcRouter)
     
     app.use(errorMiddleware)
 

@@ -3,7 +3,7 @@ import { createServer } from 'node:http'
 import { createExpressApplication } from './app.js'
 import { connectDb } from './config/database.js'
 
-const PORT = process.env.PORT || 8080
+const PORT = Number(process.env.PORT || 8080)
 
 async function main() {
     try {
@@ -12,10 +12,10 @@ async function main() {
         await connectDb()
 
         server.listen(PORT, () => {
-            console.log(`Express server is running on post ${PORT}`)
+            console.log(`Express server is running on port: ${PORT}`)
         })
     } catch (error) {
-        console.log(`Error starting http server`)
+        console.error(`Error starting http server: ${error.message}`)
         throw error
         process.exit(1)
     }
