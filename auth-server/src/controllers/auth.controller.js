@@ -12,6 +12,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     const user = await authService.login(req.body)
 
+    console.log("JWT being stored:", user.accessToken);
+    res.cookie('accessToken', user.accessToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax'
+    })
+
     ApiResponse.ok(res, 'Login successful', user)
 }
 
