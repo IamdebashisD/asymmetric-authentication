@@ -1,4 +1,6 @@
 import express, { urlencoded } from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 import authRouter from './routes/auth.routes.js'
 import jwksRouter from './routes/jwks.routes.js'
@@ -10,6 +12,17 @@ import { errorMiddleware } from './middleware/error.middleware.js'
 export function createExpressApplication() {
     const app = express()
 
+    app.use(
+        cors({
+            origin: [
+                "http://localhost:5173", 
+                "http://localhost:5174"
+            ],
+            credentials: true,
+        })
+    );
+    
+    app.use(cookieParser())
     app.use(express.json())
     app.use(urlencoded({ extended: true }))
 
