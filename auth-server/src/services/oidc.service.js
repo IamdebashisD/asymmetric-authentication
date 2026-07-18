@@ -114,6 +114,8 @@ export const token = async ({
 
         const authorizationCode = await AuthorizationCode.findOne({ code })
 
+        // console.log("Found authorization code:", authorizationCode)
+
         if (!authorizationCode) {
             throw ApiError.unauthorized("Invalid authorization code")
         }
