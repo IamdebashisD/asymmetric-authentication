@@ -1,0 +1,70 @@
+/* Page wrapper */
+.home {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(180deg, #0b1220 0%, #071026 100%);
+	padding: 2rem;
+}
+
+/* Card */
+.card {
+	width: 100%;
+	max-width: 520px;
+	background: linear-gradient(180deg, rgba(17,24,39,0.9), rgba(10,14,23,0.95));
+	border: 1px solid #eef2f7;
+	border-radius: 12px;
+	padding: 2.25rem;
+	box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+	text-align: center;
+}
+
+.card h1 {
+	margin: 0 0 0.5rem 0;
+	font-size: 1.75rem;
+	color: #ffffff;
+}
+
+.subtitle {
+	margin: 0 0 1.25rem 0;
+	color: #cbd5e1;
+	font-size: 0.95rem;
+}
+
+/* Buttons */
+.btn {
+	display: inline-block;
+	padding: 0.6rem 1rem;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	border: none;
+	transition: background-color 150ms ease, transform 120ms ease;
+}
+
+.btn:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+.btn.primary {
+	background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
+	color: #ffffff;
+}
+
+.btn.primary:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 10px 22px rgba(79,70,229,0.22);
+}
+
+/* Responsive: center text on small screens */
+@media (max-width: 640px) {
+	.card {
+		padding: 1.5rem;
+		text-align: center;
+	}
+	.card h1 {
+		font-size: 1.5rem;
+	}
+}
