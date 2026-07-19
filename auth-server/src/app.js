@@ -1,6 +1,7 @@
 import express, { urlencoded } from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import morgan from 'morgan'
 
 import authRouter from './routes/auth.routes.js'
 import jwksRouter from './routes/jwks.routes.js'
@@ -25,6 +26,11 @@ export function createExpressApplication() {
     app.use(cookieParser())
     app.use(express.json())
     app.use(urlencoded({ extended: true }))
+    app.use(morgan('dev'))
+    app.use((req, res, next) => {
+        console.log(req.body)
+        next()
+    })
 
 
     app.get('', (req, res) => {
