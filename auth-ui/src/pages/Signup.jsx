@@ -1,14 +1,18 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from "react-hook-form"
+import { useState } from 'react'
 
 import { signUp } from '../services/auth.service.js'
 
 export default function Signup() {
     
+    const [serverError, setServerError] = useState('')
+
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        reset,
+        formState: { errors, isSubmitting },
     } = useForm({
         defaultValues: {
             name: '',
@@ -18,16 +22,22 @@ export default function Signup() {
     })
 
     const navigate = useNavigate()
+    const location = useLocation()
 
     async function onSubmit(data) {
+        setServerError('')
+
         try {
             const response = await signUp(data)
             
-            console.log(response)
+            // console.log(response)
+            reset()
 
-            navigate('/login')
+            const params = new URLSearchParams(location.search)
+            navigate(`/login?${params.toString()}`)
         } catch (error) {
-            console.log(error)
+            // console.log(error)
+            setServerError(error.response?.data?.message || 'Something went wrong')
         }
     }
 
@@ -104,6 +114,10 @@ export default function Signup() {
                                     className="w-full rounded-xl border border-slate-700/70 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     {...register('email', {
                                         required: 'Email is required',
+                                        pattern: {
+                                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                            message: "Enter a valid email address",
+                                        }
                                     })}
                                 />
                                 {errors.email && (
@@ -123,8 +137,8 @@ export default function Signup() {
                                     {...register('password', {
                                         required: 'Password is required',
                                         minLength: {
-                                            value: 1,
-                                            message: 'Password must not be empty',
+                                            value: 8,
+                                            message: 'Password must be at least 8 characters',
                                         },
                                     })}
                                 />
@@ -133,17 +147,26 @@ export default function Signup() {
                                 )}
                             </div>
 
+                            {serverError && (
+                                <p className='text-sm text-red-400'>{serverError}</p>
+                            )}
+
                             <button
                                 type="submit"
-                                className="w-full rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 px-4 py-3 font-semibold text-white transition hover:from-blue-500 hover:to-indigo-500"
+                                disabled={isSubmitting}
+                                className="
+                                    w-full rounded-xl bg-linear-to-r from-blue-600
+                                    to-indigo-600 px-4 py-3 font-semibold text-white 
+                                    transition hover:from-blue-500 hover:to-indigo-500 
+                                    disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Sign Up
+                                {isSubmitting ? 'Creating account...': 'Sign Up'}
                             </button>
                         </form>
 
                         <p className="mt-8 text-center text-sm text-slate-400">
                             Already have an account?{' '}
-                            <Link to="/login" className="font-medium text-blue-400 transition hover:text-blue-300">
+                            <Link to={`/login${location.search}`} className="font-medium text-blue-400 transition hover:text-blue-300">
                                 Login
                             </Link>
                         </p>
