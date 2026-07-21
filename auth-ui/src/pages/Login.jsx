@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-
+import { useState } from 'react'
 import { signIn } from '../services/auth.service.js'
 
 export default function Login() {
@@ -8,6 +8,8 @@ export default function Login() {
     const navigate = useNavigate()
 
     const continueUrl = new URLSearchParams(location.search).get('continue')
+
+    const [serverError, setServerError] = useState('')
 
     const {
         register,
@@ -21,17 +23,21 @@ export default function Login() {
     })
 
     async function onSubmit(data) {
+        setServerError('')
+
         try {
             const response = await signIn(data)
             console.log(response)
 
-            if (continueUrl) {
-                window.location.href = `http://localhost:8080${continueUrl}`
-            } else {
-                navigate('/')
+            if (!continueUrl) {
+                console.error("Missing continue URL")
+                return
             }
+
+            window.location.href = `http://localhost:8080${continueUrl}`
+            
         } catch (error) {
-            console.log(error)
+            setServerError(error.response?.data?.message || 'Something went wrong')
         }
     }
 
@@ -75,7 +81,11 @@ export default function Login() {
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        <form 
+                            noValidate 
+                            onSubmit={handleSubmit(onSubmit)} 
+                            className="space-y-5"
+                        >
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-slate-200" htmlFor="email">
                                     Email
@@ -87,6 +97,10 @@ export default function Login() {
                                     className="w-full rounded-xl border border-slate-700/70 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     {...register('email', {
                                         required: 'Email is required',
+                                        pattern: {
+                                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                            message: "Enter a valid email address"
+                                        }
                                     })}
                                 />
                                 {errors.email && (
@@ -106,8 +120,8 @@ export default function Login() {
                                     {...register('password', {
                                         required: 'Password is required',
                                         minLength: {
-                                            value: 1,
-                                            message: 'Password must not be empty',
+                                            value: 8,
+                                            message: 'Password must be at least 8 characters',
                                         },
                                     })}
                                 />
@@ -116,12 +130,19 @@ export default function Login() {
                                 )}
                             </div>
 
+                            {serverError && (
+                                <p className='text-sm text-red-400'>{serverError}</p>
+                            )}
+
                             <button
                                 type="submit"
-                                className="w-full rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 px-4 py-3 font-semibold text-white transition hover:from-blue-500 hover:to-indigo-500"
+                                className="
+                                    w-full rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 
+                                    px-4 py-3 font-semibold text-white transition hover:from-blue-500 
+                                    hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={isSubmitting}
                             >
-                                Sign In
+                                {isSubmitting ? 'Signing in...' : 'Sign In'}
                             </button>
                         </form>
 
