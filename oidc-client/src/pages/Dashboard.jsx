@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import axios from "axios"
 
 export default function Dashboard() {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const navigate = useNavigate()
 
     useEffect(() => {
-        async function fetUser() {
+        async function fetchUser() {
             try {
                 const accessToken = sessionStorage.getItem("access_token")
                 if (!accessToken) throw new Error('No access token')
@@ -27,12 +29,14 @@ export default function Dashboard() {
                 setLoading(false)
             }
         }
-        fetUser()
+        fetchUser()
     }, [])
 
     function handleLogout() {
         sessionStorage.removeItem('access_token')
-        window.location.href = '/'
+        sessionStorage.removeItem('refresh_token')
+        sessionStorage.removeItem('id_token')
+        navigate('/', { replace: true })
     }
 
     return (

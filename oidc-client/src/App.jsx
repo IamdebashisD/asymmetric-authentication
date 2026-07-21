@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import './App.css'
 import Callback from './pages/Callback'
@@ -11,6 +11,7 @@ function App() {
       <Route path='/' element={<Home/>} />
       <Route path='/callback' element={<Callback/>} />
       <Route path='/dashboard' element={<Dashboard/>} />
+      {/* <Route path='*' element={<Navigate to='/' replace />} /> */}
     </Routes>
   )
 }

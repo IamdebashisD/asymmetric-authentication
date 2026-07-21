@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 
 import { exchangeCodeForToken } from "../services/auth.service"
 
-import axios from 'axios'
 
 export default function Callback() {
+    const navigate = useNavigate()
 
     const [searchParams] = useSearchParams()
 
@@ -15,8 +15,6 @@ export default function Callback() {
             const code = searchParams.get('code')
             const codeVerifier = sessionStorage.getItem('code_verifier')
 
-            // console.log('code: ', code)
-            // console.log('codeVerifier: ', codeVerifier)
 
             const data = {
                 code,
@@ -29,24 +27,25 @@ export default function Callback() {
 
             try {
                 const tokens = await exchangeCodeForToken(data)
-                console.log('token: ', tokens)
-
+                
                 sessionStorage.setItem("access_token", tokens.data.accessToken)
                 sessionStorage.setItem("refresh_token", tokens.data.refreshToken)
-                sessionStorage.setItem( "id_token", tokens.data.idToken)
+                sessionStorage.setItem("id_token", tokens.data.idToken)
 
                 sessionStorage.removeItem("code_verifier")
 
-                window.location.href = '/dashboard'
+
+                navigate('/dashboard', { replace: true })
 
             } catch (error) {
                 console.log(error.response.data)
+                return
             }
         }
 
         exchangeToken()
 
-    }, [])
+    }, [navigate, searchParams])
 
 
     return (
