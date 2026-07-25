@@ -2,11 +2,14 @@ import express, { urlencoded } from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
+import session from 'express-session'
 
 import authRouter from './routes/auth.routes.js'
 import jwksRouter from './routes/jwks.routes.js'
 import discoveryRouter from './routes/discovery.routes.js'
 import oidcRouter from './routes/oidc.routes.js'
+import clientRouter from './routes/client.routes.js'
+import consentRouter from './routes/consent.routes.js'
 
 import { errorMiddleware } from './middleware/error.middleware.js'
 
@@ -23,9 +26,23 @@ export function createExpressApplication() {
         })
     );
     
-    app.use(cookieParser())
     app.use(express.json())
     app.use(urlencoded({ extended: true }))
+    app.use(cookieParser())
+
+    app.use(
+        session({
+            secret: process.env.SESSION_SECRET,
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                httpOnly: true,
+                secure: false,
+                maxAge: 24 * 60 * 60 * 1000
+            }
+        })
+    )
+
     app.use(morgan('dev'))
     app.use((req, res, next) => {
         console.log(req.body)
@@ -49,6 +66,8 @@ export function createExpressApplication() {
     app.use(jwksRouter)
     app.use(discoveryRouter)
     app.use(oidcRouter)
+    app.use('/clients', clientRouter)
+    app.use(consentRouter)
     
     app.use(errorMiddleware)
 
