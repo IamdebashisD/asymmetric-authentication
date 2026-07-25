@@ -12,14 +12,22 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     const user = await authService.login(req.body)
 
-    console.log("JWT being stored:", user.accessToken);
+    // console.log("JWT being stored:", user.accessToken);
     res.cookie('accessToken', user.accessToken, {
         httpOnly: true,
         secure: false,
         sameSite: 'lax'
     })
+    
+    req.session.userId = user.user._id.toString()
 
-    ApiResponse.ok(res, 'Login successful', user)
+    req.session.save((err) => {
+        if (err) {
+            throw err
+        }
+
+        ApiResponse.ok(res, 'Login successful', user)
+    })
 }
 
 export const refreshToken = async (req, res) => {
@@ -43,7 +51,16 @@ export const logout = async (req, res) => {
 
     await authService.logout(refreshToken)
 
-    ApiResponse.ok(res, 'Logout successfully')
+    req.session.destroy((err) => {
+        if (err) {
+            throw ApiError.internal("Failed to destroy session")
+        }
+        
+        res.clearCookie("connect.sid")
+        res.clearCookie("accessToken")
+
+        ApiResponse.ok(res, 'Logout successfully')
+    })
 }
 
 export const profile = async (req, res) => { 

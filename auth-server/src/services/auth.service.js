@@ -63,7 +63,6 @@ export const login = async ({ email, password }) => {
 
     const userObject = user.toObject()
     delete userObject.password
-    delete userObject._id
     delete userObject.createdAt
     delete userObject.updatedAt
     delete userObject.__v
