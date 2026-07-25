@@ -1,3 +1,4 @@
+import User from '../models/user.model.js'
 import ApiError from '../utils/api-error.js'
 import { verifyAccessToken } from '../utils/jwt.js'
 
@@ -7,7 +8,22 @@ const redirectToLogin = (req, res) => {
     )
 }
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
+    if (req.session?.userId) {
+        const user = await User.findById(req.session.userId).select('_id email')
+
+        if (user) {
+            req.user = {
+                sub: user._id.toString(),
+                email: user.email
+            }
+
+            return next()
+        }
+        
+        req.session.destroy(() => {})
+    }
+
     const header = req.headers['authorization']
     const accessToken = req.cookies.accessToken
 
