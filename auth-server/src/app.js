@@ -67,7 +67,7 @@ export function createExpressApplication() {
     app.use(discoveryRouter)
     app.use(oidcRouter)
     app.use('/clients', clientRouter)
-    app.use(consentRouter)
+    app.use('/api',consentRouter)
     
     app.use(errorMiddleware)
 
