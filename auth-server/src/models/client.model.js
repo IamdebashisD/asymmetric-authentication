@@ -35,7 +35,11 @@ const clientSchema = new mongoose.Schema(
         scopes: [{
             type: String,
             enum: ['openid', 'profile', 'email']
-        }]
+        }],
+        isActive: {
+            type: Boolean,
+            default: true
+        }
     },
     { timestamps: true }
 )
