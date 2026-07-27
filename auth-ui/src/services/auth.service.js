@@ -9,3 +9,8 @@ export const signIn = async (data) => {
     const response = await api.post('/auth/login', data)
     return response.data
 }
+
+export const getConsentRequest = async (requestId) => {
+    const response = await api.get(`/consent/${requestId}`)
+    return response.data
+}
