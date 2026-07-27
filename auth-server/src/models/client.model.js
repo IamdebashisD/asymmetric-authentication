@@ -19,23 +19,31 @@ const clientSchema = new mongoose.Schema(
             type: String,
             required: true
         }],
-        grantTypes: [{
-            type: String,
-            enum: [
-                'authorization_code',
-                'refresh_token'
-            ],
+        grantTypes: {
+            type: [{ 
+                type: String,
+                enum: [
+                    'authorization_code',
+                    'refresh_token'
+                ],
+            }],
             default: ['authorization_code']
-        }],
-        responseTypes: [{
-            type: String,
-            enum: ['code'],
+        },
+        
+        responseTypes:{ 
+            type: [{
+                type: String,
+                enum: ['code'],
+            }], 
             default: ['code']
-        }],
-        scopes: [{
-            type: String,
-            enum: ['openid', 'profile', 'email']
-        }],
+        },
+        scopes: {
+            type: [{
+                type: String,
+                enum: ['openid', 'profile', 'email']
+            }],
+            default: ['openid']
+        },
         isActive: {
             type: Boolean,
             default: true
