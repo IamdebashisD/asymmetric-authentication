@@ -2,6 +2,8 @@ import User from '../models/user.model.js'
 import RefreshToken from '../models/refresh-token.model.js'
 import AuthorizationCode from '../models/authorization-code.model.js'
 import Client from '../models/client.model.js'
+import AuthorizationRequest from '../models/authorization-request.model.js'
+
 import { generateAuthorizationCode } from '../utils/oidc.js'
 import { 
     generateAccessToken, 
@@ -11,6 +13,194 @@ import {
 } from '../utils/jwt.js'
 import { verifyCodeChallenge } from '../utils/pkce.js'
 import ApiError from '../utils/api-error.js'
+import { v4 as uuidv4 } from 'uuid'
+
+
+
+const validateAuthorizationRequest = ({
+    responseType,
+    scope,
+    codeChallenge,
+    codeChallengeMethod
+}) => {
+
+    if (responseType !== "code") {
+        throw ApiError.badRequest(
+            "Only response_type=code is supported"
+        )
+    }
+
+    if (!scope) {
+        throw ApiError.badRequest("Scope is required")
+    }
+
+    if (codeChallenge && !codeChallengeMethod) {
+        throw ApiError.badRequest(
+            "code_challenge_method is required"
+        )
+    }
+
+    if (codeChallengeMethod && !codeChallenge) {
+        throw ApiError.badRequest(
+            "code_challenge is required"
+        )
+    }
+
+    if (codeChallenge && codeChallengeMethod !== "S256") {
+        throw ApiError.badRequest(
+            "Only S256 code_challenge_method is supported"
+        )
+    }
+
+    const allowedScopes = [
+        "openid",
+        "profile",
+        "email"
+    ]
+
+    const requestedScopes = scope.split(" ")
+
+    if (!requestedScopes.includes("openid")) {
+        throw ApiError.badRequest(
+            "openid scope is required"
+        )
+    }
+
+    for (const requestedScope of requestedScopes) {
+        if (!allowedScopes.includes(requestedScope)) {
+            throw ApiError.badRequest(
+                `Unsupported scope: ${requestedScope}`
+            )
+        }
+    }
+
+    return requestedScopes
+}
+
+export const createAuthorizationRequest = async ({
+    clientId,
+    redirectUri,
+    responseType,
+    state,
+    scope,
+    codeChallenge,
+    codeChallengeMethod,
+    userId
+}) => {
+
+    const requestedScopes = validateAuthorizationRequest({
+        responseType,
+        scope,
+        codeChallenge,
+        codeChallengeMethod
+    })
+
+    const requestId = uuidv4()
+    const expiresAt = new Date( Date.now() + 5 * 60 * 1000 )
+
+    await AuthorizationRequest.create({ 
+        requestId, 
+        clientId, 
+        redirectUri, 
+        responseType, 
+        state, 
+        scope: requestedScopes, 
+        codeChallenge,
+        codeChallengeMethod, 
+        userId, 
+        expiresAt
+    })
+
+    return requestId
+}
+
+export const getAuthorizationRequest = async (requestId) => {
+    console.log("Searching requestId:", requestId)
+
+    const authorizationRequest = await AuthorizationRequest.findOne({ requestId })
+
+    console.log("Found authorizationRequest:", authorizationRequest)
+
+    if (!authorizationRequest) {
+        throw ApiError.notFound('Authorization request not found')
+    }
+    if (authorizationRequest.expiresAt < new Date()) {
+        throw ApiError.badRequest('Authorization request has expired')
+    }
+
+    const client = await Client.findOne({ clientId: authorizationRequest.clientId })
+    if (!client) {
+        throw ApiError.notFound('Client not found')
+    }
+
+    return {
+        requestId: authorizationRequest.requestId,
+        client: {
+            clientId: client.clientId,
+            name: client.name
+        },
+        scope: authorizationRequest.scope
+    }
+}
+
+export const approveAuthorizationRequest = async (requestId) => {
+    const authorizationRequest = await AuthorizationRequest.findOne({ requestId })
+
+    if (!authorizationRequest) throw ApiError.notFound('Authorization request not found')
+    if (authorizationRequest.expiresAt < new Date()) throw ApiError.badRequest('Authorization request has expired')
+    
+    const user = await User.findById(authorizationRequest.userId)
+    if (!user) throw ApiError.notFound('User not found')
+
+    const client = await Client.findOne({ clientId: authorizationRequest.clientId })
+    if (!client) throw ApiError.notFound('Client not found')
+
+    const code = generateAuthorizationCode()
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
+
+    await AuthorizationCode.create({
+        code,
+        user: user._id,
+        clientId: authorizationRequest.clientId,
+        redirectUri: authorizationRequest.redirectUri,
+        scope: authorizationRequest.scope,
+        codeChallenge: authorizationRequest.codeChallenge,
+        codeChallengeMethod: authorizationRequest.codeChallengeMethod,
+        expiresAt
+    })
+
+    await AuthorizationRequest.deleteOne({
+        _id: authorizationRequest._id
+    })
+
+    return {
+        redirectUri: 
+            `${authorizationRequest.redirectUri}` + 
+            `?code=${code}` + 
+            `&state=${authorizationRequest.state}`
+    }
+}
+
+export const denyAuthorizationRequest = async (requestId) => {
+    const authorizationRequest = await AuthorizationRequest.findOne({ requestId })
+
+    if (!authorizationRequest) {
+        throw ApiError.notFound("Authorization request not found")
+    }
+
+    const { redirectUri, state } = authorizationRequest
+
+    await AuthorizationRequest.deleteOne({ _id: authorizationRequest._id })
+
+    const params = new URLSearchParams({
+        error: 'access_denied',
+        state
+    })
+
+    return {
+        redirectUri: `${redirectUri}?${params.toString()}`
+    }
+}
 
 
 export const authorize = async ({
@@ -161,7 +351,7 @@ export const token = async ({
             expiresAt: getRefreshTokenExpiry()
         })
 
-        console.log('Create RefreshToken : ', createRefreshToken)
+        // console.log('Create RefreshToken : ', createRefreshToken)
         
         const idToken = generateIdToken({
             sub: user._id.toString(),
