@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 
 import { exchangeCodeForToken } from "../services/auth.service"
 
@@ -9,9 +9,35 @@ export default function Callback() {
 
     const [searchParams] = useSearchParams()
 
+    const [message, setMessage] = useState("Processing authorization...")
+    const [hasError, setHasError] = useState(false)
+
 
     useEffect(() => {
         async function exchangeToken() {
+            const error = searchParams.get('error')
+            const errorDescription = searchParams.get('error_description') 
+
+            // User denied consent or another OIDC error occurred
+            if (error) {
+                sessionStorage.removeItem('code_verifier')
+                
+                setHasError(true)
+
+                if (error === "access_denied") {
+                    setMessage("You denied access to this application.")
+                } else {
+                    setMessage(`Authorization failed: ${error}`)
+                }
+
+                if (errorDescription) {
+                    console.error(errorDescription)
+                }
+
+                return
+            }
+
+
             const code = searchParams.get('code')
             const codeVerifier = sessionStorage.getItem('code_verifier')
 
@@ -49,8 +75,19 @@ export default function Callback() {
 
 
     return (
-        <div>
-            <h1>Callback page welcome back</h1>
+        <div className="min-h-screen bg-slate-950 px-4 py-16 text-slate-100 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-md rounded-3xl border border-white/10 bg-slate-900/80 p-8 text-center shadow-2xl shadow-black/30 backdrop-blur-xl">
+                <h1 className="text-2xl font-semibold text-white">OIDC Client</h1>
+                <p className="mt-4 text-sm leading-6 text-slate-300">{message}</p>
+
+                {hasError && (
+                    <div className="mt-6">
+                        <Link to="/" className="inline-flex w-full justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
+                            Try Again
+                        </Link>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
