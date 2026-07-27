@@ -10,8 +10,29 @@ export const createClient = async (req, res) => {
 
     ApiResponse.created(
         res, 
-        "Client registered successfully", 
+        'Client registered successfully', 
         client
     )
 }
+
+export const getAllClients = async (req, res) => {
+    const clients = await clientService.getAllClients()
+
+    ApiResponse.ok(
+        res,
+        'Clients fetched successfully',
+        clients
+    )
+}
+
+export const getClientById = async (req, res) => {
+    const client = await clientService.getClientById(req.params.clientId)
+    console.log(client)
+    ApiResponse.ok(
+        res,
+        'Client fetched successfully',
+        client
+    )
+}
+
 
