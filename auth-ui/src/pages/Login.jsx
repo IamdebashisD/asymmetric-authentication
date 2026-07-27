@@ -115,7 +115,7 @@ export default function Login() {
                                 <input
                                     id="password"
                                     type="password"
-                                    placeholder="********"
+                                    placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
                                     className="w-full rounded-xl border border-slate-700/70 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     {...register('password', {
                                         required: 'Password is required',
