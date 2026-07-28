@@ -35,4 +35,24 @@ export const getClientById = async (req, res) => {
     )
 }
 
+export const updateClient = async (req, res) => {
+    if (!req) throw ApiError.badRequest('Client information is missing')
+
+    const client = await clientService.updateClient(req.params.clientId, req.body)
+
+    ApiResponse.ok(
+        res,
+        'Client updated successfully',
+        client
+    )
+}
+
+export const deleteClient = async (req, res) => {
+    await clientService.deleteClient(req.params.clientId)
+
+    ApiResponse.ok(
+        res,
+        'Client deleted successfully',
+    )
+}
 
