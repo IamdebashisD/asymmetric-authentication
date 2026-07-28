@@ -14,7 +14,12 @@ export const authorize = async (req, res) => {
         code_challenge_method
     } = req.query
 
-    const result = await oidcService.authorize({
+    if (!req.session.userId) {
+        const continueUrl = encodeURIComponent(req.originalUrl)
+        return res.redirect(`http://localhost:5173/login?continue=${continueUrl}`)
+    }
+
+    const requestId = await oidcService.createAuthorizationRequest({
         clientId: client_id,
         redirectUri: redirect_uri,
         responseType: response_type,
@@ -25,7 +30,7 @@ export const authorize = async (req, res) => {
         userId: req.user.sub
     })
 
-    return res.redirect(result.redirectUri)
+    return res.redirect(`http://localhost:5173/consent?request_id=${requestId}`)
 }
 
 export const token = async (req, res) => {
