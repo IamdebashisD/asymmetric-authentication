@@ -54,3 +54,14 @@ export const authMiddleware = async (req, res, next) => {
         throw ApiError.unauthorized("Invalid or expired access token")
     }
 }
+
+export const adminMiddleware = (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Admin access required.'
+        })
+    }
+
+    next()
+}
