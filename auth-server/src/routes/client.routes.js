@@ -2,17 +2,19 @@ import * as clientController from '../controllers/client.controller.js'
 import { clientDto } from '../dto/client.dto.js'
 import { validate } from '../middleware/validate.js'
 import { Router } from 'express'
+import { authMiddleware, adminMiddleware } from '../middleware/auth.middleware.js'
+
 
 const router = Router()
 
-router.get('/', clientController.getAllClients)
+router.get('/', authMiddleware, adminMiddleware, clientController.getAllClients)
 
-router.get('/:clientId', clientController.getClientById)
+router.get('/:clientId', authMiddleware, adminMiddleware, clientController.getClientById)
 
-router.post('/client', validate(clientDto), clientController.createClient)
+router.post('/client', authMiddleware, adminMiddleware, validate(clientDto), clientController.createClient)
 
-router.put('/:clientId', clientController.updateClient)
+router.put('/:clientId', authMiddleware, adminMiddleware, clientController.updateClient)
 
-router.delete('/:clientId', clientController.deleteClient)
+router.delete('/:clientId', authMiddleware, adminMiddleware, clientController.deleteClient)
 
 export default router
