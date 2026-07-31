@@ -2,11 +2,15 @@ import * as oidcService from '../services/oidc.service.js'
 import ApiResponse from '../utils/api-response.js'
 
 export const getConsent = async (req, res) => {
-    const { requestId } = req.params
+    try {
+        const { requestId } = req.params
 
-    const data = await oidcService.getAuthorizationRequest(requestId)
+        const data = await oidcService.getAuthorizationRequest(requestId)
 
-    ApiResponse.ok(res, 'Authorization request found', data)
+        ApiResponse.ok(res, 'Authorization request found', data)
+    } catch (error) {
+        next(error);
+    }
 }
 
 export const approveConsent = async (req, res) => {
