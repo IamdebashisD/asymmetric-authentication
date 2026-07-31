@@ -6,18 +6,17 @@ import { getConsentRequest } from '../services/auth.service'
 
 export default function Consent() {
     const [searchParams] = useSearchParams()
-    const requestId = searchParams.get('request_id')
+    const requestId = searchParams.get('request_id') // Get the request_id from the query parameters
 
     const [consent, setConsent] = useState(null)
     const [loading, setLoading] = useState(true)
 
-
+    // Load the consent request data when the component mounts or when the requestId changes
     useEffect(() => {
         async function loadConsent() {
             try {
-                const response = await getConsentRequest(requestId)
-                setConsent(response.data)
-                console.log(response.data)
+                const consent = await getConsentRequest(requestId)
+                setConsent(consent.data)
             } catch (error) {
                 console.error(error)
             } finally {
