@@ -45,8 +45,8 @@ export default function Callback() {
             const data = {
                 code,
                 grant_type: 'authorization_code',
-                client_id: 'my-client',
-                client_secret: 'super-secret',
+                client_id: 'f861a315-045b-47d4-8591-cf0c7e867b37',
+                client_secret: '9994ce86b3f52dff33ba724da6726a9efd3c01f4018ca19902a9e380ef0bb474',
                 redirect_uri: 'http://localhost:5174/callback',
                 code_verifier: codeVerifier
             }

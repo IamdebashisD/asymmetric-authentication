@@ -9,7 +9,7 @@ export default function Home() {
         sessionStorage.setItem('code_verifier', codeVerifier)
 
         const params = new URLSearchParams({
-            client_id: "my-client",
+            client_id: "f861a315-045b-47d4-8591-cf0c7e867b37",
             redirect_uri: "http://localhost:5174/callback",
             response_type: "code",
             scope: "openid profile email",
