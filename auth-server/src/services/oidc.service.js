@@ -430,3 +430,16 @@ export const userInfo = async (userId, scope) => {
 
     return claims
 }
+
+export const revokeToken = async ({ token, clientId, clientSecret }) => {
+    const client = await Client.findOne({ clientId })
+
+    if (!clientId) throw ApiError.unauthorized('Invalid client')
+
+    if (client.clientSecret !== clientSecret) throw ApiError.unauthorized('Invalid client secret')
+    
+    const storedRefreshToken = await RefreshToken.findOne({ token })
+    if (!storedRefreshToken) return
+
+    await RefreshToken.deleteOne({ _id: storedRefreshToken._id })
+}
