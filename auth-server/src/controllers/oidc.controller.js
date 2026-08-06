@@ -111,3 +111,15 @@ export const userInfo = async (req, res) => {
     
     ApiResponse.ok(res, 'User found', user)
 }
+
+export const revoke = async (req, res) => {
+    const { token, client_id, client_secret } = req.body
+
+    await oidcService.revokeToken({ 
+        token, 
+        clientId: client_id, 
+        clientSecret: client_secret 
+    })
+
+    ApiResponse.success(res)
+}
