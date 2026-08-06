@@ -26,7 +26,7 @@ class ApiError extends Error {
         return new ApiError(404, message)
     }
 
-    static internal(message = "Internal server error") {
+    static internal(message = "Internal server error"){
         return new ApiError(500, message)
     }
     
