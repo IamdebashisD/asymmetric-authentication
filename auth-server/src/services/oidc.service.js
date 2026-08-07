@@ -15,6 +15,7 @@ import { verifyCodeChallenge } from '../utils/pkce.js'
 import ApiError from '../utils/api-error.js'
 import { v4 as uuidv4 } from 'uuid'
 
+import { validateClient } from '../utils/validate-client.js'
 
 
 const validateAuthorizationRequest = ({
@@ -432,14 +433,10 @@ export const userInfo = async (userId, scope) => {
 }
 
 export const revokeToken = async ({ token, clientId, clientSecret }) => {
-    const client = await Client.findOne({ clientId })
-
-    if (!clientId) throw ApiError.unauthorized('Invalid client')
-
-    if (client.clientSecret !== clientSecret) throw ApiError.unauthorized('Invalid client secret')
+    await validateClient(clientId, clientSecret)
     
     const storedRefreshToken = await RefreshToken.findOne({ token })
     if (!storedRefreshToken) return
 
-    await RefreshToken.deleteOne({ _id: storedRefreshToken._id })
+    await storedRefreshToken.deleteOne()
 }
