@@ -19,6 +19,23 @@ const refreshTokenSchema = new mongoose.Schema({
         required: true,
         index: { expires: 0 },
     },
+    familyId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    rotatedAt: {
+        type: Date,
+        default: null
+    },
+    replacedByToken: { 
+        type: String, 
+        default: null 
+    },
+    revokedAt: {
+        type: Date,
+        default: null
+    },
 }, { timestamps: true })
 
 export default mongoose.model('RefreshToken', refreshTokenSchema)
