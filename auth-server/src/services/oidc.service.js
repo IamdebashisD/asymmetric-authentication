@@ -344,12 +344,14 @@ export const token = async ({
         })
 
         const refreshToken = generateRefreshToken()
-        
+        const familyId = uuidv4()
+
         const createRefreshToken = await RefreshToken.create({
             token: refreshToken,
             user: user._id,
             scope: authorizationCode.scope,
-            expiresAt: getRefreshTokenExpiry()
+            expiresAt: getRefreshTokenExpiry(),
+            familyId
         })
 
         // console.log('Create RefreshToken : ', createRefreshToken)
@@ -377,6 +379,20 @@ export const token = async ({
             throw ApiError.unauthorized("Invalid refresh token")
         }
 
+        if (storedRefreshToken.rotatedAt) {
+
+            await RefreshToken.updateMany(
+                { familyId: storedRefreshToken.familyId }, 
+                { $set: { revokedAt: new Date() } }
+            )
+
+            throw ApiError.unauthorized("Refresh token reuse detected")
+        }
+
+        if (storedRefreshToken.revokedAt) {
+            throw ApiError.unauthorized("Refresh token has been revoked")
+        }
+
         /* Check expiration */
         if (storedRefreshToken.expiresAt < new Date()) {
             throw ApiError.unauthorized("Refresh token has expired")
@@ -401,13 +417,18 @@ export const token = async ({
             token: newRefreshToken,
             user: user._id,
             scope: storedRefreshToken.scope,
-            expiresAt: getRefreshTokenExpiry()
+            expiresAt: getRefreshTokenExpiry(),
+            familyId: storedRefreshToken.familyId
         })
 
         
-        await RefreshToken.deleteOne({
-            _id: storedRefreshToken._id
-        })
+        // await RefreshToken.deleteOne({
+        //     _id: storedRefreshToken._id
+        // })
+
+        storedRefreshToken.rotatedAt = new Date()
+        storedRefreshToken.replacedByToken = newRefreshToken
+        await storedRefreshToken.save()
 
         return {
             accessToken,

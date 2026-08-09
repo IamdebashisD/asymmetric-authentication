@@ -7,6 +7,8 @@ import {
     generateRefreshToken, 
     getRefreshTokenExpiry 
 } from "../utils/jwt.js";
+import { v4 as uuidv4 } from 'uuid'
+
 
 
 export const register = async ({ name, email, password }) => {
@@ -53,13 +55,14 @@ export const login = async ({ email, password }) => {
     })
 
     const refreshToken = generateRefreshToken()
-    
+    const familyId = uuidv4()
     const expiresAt = getRefreshTokenExpiry()
 
     await RefreshToken.create({
         token: refreshToken,
         user: user._id,
-        expiresAt
+        expiresAt,
+        familyId
     })
 
     const userObject = user.toObject()
